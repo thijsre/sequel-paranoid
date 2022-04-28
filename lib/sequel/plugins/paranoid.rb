@@ -46,7 +46,15 @@ module Sequel::Plugins
 
         # scope for both
         define_method(options[:ignore_deletion_scope_name]) do
-          unfiltered
+          filter.each{|key, value|
+            opts[:where].args.each{|arg|
+              expr = arg.args.first
+              if expr.column == options[:deleted_at_field_name] && expr.table == model.table_name
+                arg.args.pop
+              end
+            }
+          }
+          self
         end
 
         # soft delete the records without callbacks.
